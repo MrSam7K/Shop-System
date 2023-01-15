@@ -1,0 +1,7 @@
+name: ShopSystem
+version: '${version}'
+main: me.mrsam7k.shopsystem.Main
+api-version: 1.19
+commands:
+  shop:
+    description: what
