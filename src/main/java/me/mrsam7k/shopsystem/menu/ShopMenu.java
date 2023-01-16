@@ -1,6 +1,8 @@
 package me.mrsam7k.shopsystem.menu;
 
+import me.mrsam7k.shopsystem.Database;
 import me.mrsam7k.shopsystem.Main;
+import me.mrsam7k.shopsystem.PlayerStats;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -12,6 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +22,7 @@ import java.util.List;
 public class ShopMenu {
     private static final Plugin plugin = Main.getPlugin(Main.class);
 
-    public static void open(Player player) {
+    public static void open(Player player) throws SQLException {
         Inventory inv = plugin.getServer().createInventory(null, 45, "Shop");
         Integer[] glassSlotsArray = new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 41, 42, 43, 44};
         List<Integer> glassSlots = Arrays.asList(glassSlotsArray);
@@ -34,6 +37,16 @@ public class ShopMenu {
         }
         int itemIndex = -1;
         for (ShopItems shopItem : ShopItems.values()) {
+            //Get player's data from database
+            PlayerStats ps = Database.findPlayerStatsByUUID(player.getUniqueId().toString(), shopItem.name);
+            if(ps == null){
+                for(ShopItems shopItem2 : ShopItems.values()){
+                    ps = new PlayerStats(player.getUniqueId().toString() + "_" + shopItem2.name.replace(" ", "_").toLowerCase(), 0);
+                   Database.createPlayerStats(ps);
+                }
+            }
+            double tier = (double) ps.getTier();
+
             itemIndex++;
             while (glassSlots.contains(itemIndex)) {
                 itemIndex++;
@@ -46,38 +59,46 @@ public class ShopMenu {
             lore.add("");
             lore.add(ChatColor.LIGHT_PURPLE + "Description:");
 
-            lore.add(net.md_5.bungee.api.ChatColor.of("#5d91a6") + "\u23F5 " + net.md_5.bungee.api.ChatColor.of("#B1E6FC") + shopItem.description[0].replace("[RESET]", net.md_5.bungee.api.ChatColor.of("#B1E6FC") + ""));
+            lore.add(Main.fromHex("#5d91a6") + "\u23F5 " +
+                    Main.fromHex("#B1E6FC") +
+                    Main.toColor(shopItem.description[0]).replace("[RESET]", Main.fromHex("#B1E6FC") +
+                            ""));
             int i = -1;
             for (String s : shopItem.description) {
                 i++;
-                s.replace("[RESET]", net.md_5.bungee.api.ChatColor.of("#B1E6FC") + "");
+                s.replace("[RESET]", Main.fromHex("#B1E6FC") + "");
                 if (i == 0) continue;
-                lore.add("  " + net.md_5.bungee.api.ChatColor.of("#B1E6FC") + s);
+                lore.add("  " + Main.fromHex("#B1E6FC") + Main.toColor(s));
             }
             lore.add("");
 
                 lore.add(ChatColor.LIGHT_PURPLE + "Current Tier:");
-                int unlockedBars = (int) Math.floor((20d / shopItem.tiers) * 50);
-                int nextBars = (int) Math.floor(Math.floor((21d / shopItem.tiers) * 50) - unlockedBars);
+                int unlockedBars = (int) Math.floor((tier / shopItem.tiers) * 50);
+                int nextBars = (int) Math.floor(Math.floor(((double) (tier + 1) / shopItem.tiers) * 50) - unlockedBars);
                 int remainingBars = (int) Math.floor(50 - (unlockedBars + nextBars));
-                String unlockedBar = net.md_5.bungee.api.ChatColor.of(shopItem.hexColor) + "|";
+                String unlockedBar = Main.fromHex(shopItem.hexColor) + "|";
 
-                String progressBar = net.md_5.bungee.api.ChatColor.of("#5d91a6") + "\u23F5 " +
+                String progressBar = Main.fromHex("#5d91a6") + "\u23F5 " +
                         ChatColor.GRAY + "[" +
                         unlockedBar.repeat(unlockedBars) +
                         ChatColor.GRAY + "|".repeat(nextBars) +
                         ChatColor.DARK_GRAY + "|".repeat(remainingBars) +
                         ChatColor.GRAY + "]";
                 lore.add(progressBar);
-
                 lore.add("");
-                lore.add(net.md_5.bungee.api.ChatColor.GRAY + "Current Tier: " + ShopItems.getTier(shopItem, 20));
-                lore.add("");
-                lore.add(net.md_5.bungee.api.ChatColor.of(shopItem.hexColor) + "Click to purchase!");
+                if(tier > 0) {
+                    lore.add(ChatColor.GRAY + "Current Tier: " + ShopItems.getTier(shopItem, (int) tier));
+                    lore.add("");
+                }
+                if(tier == shopItem.tiers){
+                    lore.add(Main.fromHex("#65CF15") + Main.toColor("&lMAXED OUT!"));
+                } else{
+                    lore.add(Main.fromHex(shopItem.hexColor) + "Click to purchase!");
+                }
 
                 ItemMeta itemMeta = item.getItemMeta();
                 itemMeta.setLore(lore);
-                itemMeta.setDisplayName(net.md_5.bungee.api.ChatColor.of(shopItem.hexColor) + shopItem.name);
+                itemMeta.setDisplayName(Main.fromHex(shopItem.hexColor) + shopItem.name);
                 item.setItemMeta(itemMeta);
                 inv.setItem(itemIndex, item);
             }

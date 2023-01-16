@@ -7,9 +7,9 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 public enum ShopItems {
-    BUNNY_MULTIPLIER("Bunny Multiplier", "#9FFF1F", new String[]{"Gain more " + ChatColor.GREEN + "Bunny Points" + "[RESET] from feeding", "bunnies"}, 70, 10, 10, Material.RABBIT_SPAWN_EGG),
-    STAR_MULTIPLIER("Star Multiplier", "#FCCA24", new String[]{"Gain more &aBunny Points [RESET] from feeding", "bunnies"}, 70, 25, 25, Material.HONEYCOMB),
-    LUCKY_BASKET("Lucky Basket", "#EFFC41", new String[]{"Gain more " + ChatColor.GREEN + "Bunny Points" + "[RESET] from feeding", "bunnies"}, 51, 50, 50, Material.BROWN_SHULKER_BOX);
+    BUNNY_MULTIPLIER("Bunny Multiplier", "#9FFF1F", new String[]{"Gain more &aBunny Points[RESET] from feeding", "bunnies."}, 70, 10, 10, Material.RABBIT_SPAWN_EGG),
+    STAR_MULTIPLIER("Star Multiplier", "#FCCA24", new String[]{"Gain more &6Bunny Stars[RESET] from feeding", "golden bunnies."}, 70, 25, 25, Material.HONEYCOMB),
+    LUCKY_BASKET("Lucky Basket", "#EFFC41", new String[]{"Grants a chance to find a &especial basket", "that gives you lots of stars."}, 51, 50, 50, Material.BROWN_SHULKER_BOX);
 
 
     //SPEED(13);
@@ -33,8 +33,8 @@ public enum ShopItems {
 
     public static String getTier(ShopItems item, int currentTier){
         switch (item){
-            case BUNNY_MULTIPLIER -> { return ChatColor.GREEN + "+" + currentTier + " Points"; }
-            case STAR_MULTIPLIER -> { return ChatColor.GOLD + "+" + currentTier + " Stars"; }
+            case BUNNY_MULTIPLIER -> { return ChatColor.GREEN + "+" + currentTier + " Point" + (currentTier == 1 ? "" : "s"); }
+            case STAR_MULTIPLIER -> { return ChatColor.GOLD + "+" + currentTier + " Star" + (currentTier == 1 ? "" : "s"); }
             case LUCKY_BASKET -> {
                 int min = currentTier * 25;
                 int max = currentTier * 50;

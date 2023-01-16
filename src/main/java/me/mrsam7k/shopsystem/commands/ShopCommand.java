@@ -7,6 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
+
 public class ShopCommand implements CommandExecutor {
 
     @Override
@@ -15,7 +17,11 @@ public class ShopCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cYou must be a player to do this!"));
             return true;
         }
-        ShopMenu.open(player);
+        try {
+            ShopMenu.open(player);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         return true;
     }
